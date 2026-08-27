@@ -1,5 +1,5 @@
 node_modules/
-dist/
+example/dist/
 tests/fixtures/generated/
 tests/fixtures/test.db
 tests/fixtures/test.db-journal
