@@ -176,20 +176,3 @@ pnpm validate
 ```
 
 In addition to the standard Prisma 7 tests, `pnpm validate` runs compatibility tests against Prisma 6.0 and Prisma 6.19.
-
-## リリース
-
-npmjs.comのパッケージ設定で、次のGitHub ActionsワークフローをTrusted Publisherとして登録します。
-
-- Organization or user: `zaru`
-- Repository: `prisma-custom-nanoid`
-- Workflow filename: `release.yml`
-- Environment name: `npm`
-
-リリース時は `package.json` のバージョンを更新して `pnpm validate` を通し、変更をコミットします。そのコミットに対応する注釈付き `vX.Y.Z` タグをpushしてください。
-
-タグと `package.json` のバージョンが一致すると、GitHub Actionsがnpm Trusted Publishingでnpmjs.comへ公開し、成功後にGitHub Releaseを自動生成します。npmトークンは使用しません。
-
-## License
-
-MIT
