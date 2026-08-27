@@ -252,6 +252,42 @@ describe("customNanoid", () => {
     }
   });
 
+  it("nested update の data 内にある create を補完する", async () => {
+    const user = await prisma.user.create({
+      data: {
+        email: "nested-update@example.com",
+        posts: { create: { id: "nested-update-post", title: "existing" } },
+      },
+    });
+
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        posts: {
+          update: {
+            where: { id: "nested-update-post" },
+            data: {
+              comments: {
+                create: [
+                  { body: "generated" },
+                  { id: "explicit-comment", body: "explicit" },
+                ],
+              },
+            },
+          },
+        },
+      },
+      include: {
+        posts: { include: { comments: { orderBy: { body: "asc" } } } },
+      },
+    });
+
+    expect(updated.id).toBe(user.id);
+    expect(updated.posts[0]?.id).toBe("nested-update-post");
+    expect(updated.posts[0]?.comments[0]?.id).toBe("explicit-comment");
+    expect(updated.posts[0]?.comments[1]?.id).toMatch(/^[ghi789]{9}$/);
+  });
+
   it("未設定 root と中間モデルから設定済み子孫へ到達する", async () => {
     const account = await prisma.account.create({
       data: {
@@ -316,9 +352,25 @@ describe("customNanoid", () => {
   });
 
   it.each([
+    [undefined, "a models configuration is required"],
+    [null, "a models configuration is required"],
+    [[], "a models configuration is required"],
+    [{ models: null }, "a models configuration is required"],
+    [{ models: [] }, "a models configuration is required"],
+    [{ models: "User" }, "a models configuration is required"],
     [{ models: {} }, "models must contain at least one"],
     [
+      { models: { " ": { field: "id", alphabet: "abc", size: 10 } } },
+      "model names must not be empty",
+    ],
+    [{ models: { User: null } }, "User.field"],
+    [{ models: { User: [] } }, "User.field"],
+    [
       { models: { User: { field: "", alphabet: "abc", size: 10 } } },
+      "User.field",
+    ],
+    [
+      { models: { User: { field: " ", alphabet: "abc", size: 10 } } },
       "User.field",
     ],
     [
@@ -326,13 +378,48 @@ describe("customNanoid", () => {
       "User.alphabet",
     ],
     [
+      { models: { User: { field: "id", alphabet: "a".repeat(256), size: 1 } } },
+      null,
+    ],
+    [
+      { models: { User: { field: "id", alphabet: "a".repeat(257), size: 1 } } },
+      "User.alphabet",
+    ],
+    [
       { models: { User: { field: "id", alphabet: "abc", size: 0 } } },
+      "User.size",
+    ],
+    [
+      { models: { User: { field: "id", alphabet: "abc", size: -1 } } },
+      "User.size",
+    ],
+    [
+      { models: { User: { field: "id", alphabet: "abc", size: 1.5 } } },
+      "User.size",
+    ],
+    [
+      {
+        models: {
+          User: {
+            field: "id",
+            alphabet: "abc",
+            size: Number.MAX_SAFE_INTEGER + 1,
+          },
+        },
+      },
       "User.size",
     ],
     [
       {
         models: { User: { field: "id", alphabet: "abc", size: 10 } },
         relations: null,
+      },
+      "relations must be an object",
+    ],
+    [
+      {
+        models: { User: { field: "id", alphabet: "abc", size: 10 } },
+        relations: [],
       },
       "relations must be an object",
     ],
@@ -346,7 +433,28 @@ describe("customNanoid", () => {
     [
       {
         models: { User: { field: "id", alphabet: "abc", size: 10 } },
+        relations: { User: 1 },
+      },
+      "relations.User",
+    ],
+    [
+      {
+        models: { User: { field: "id", alphabet: "abc", size: 10 } },
+        relations: { " ": { posts: "Post" } },
+      },
+      "parent model names",
+    ],
+    [
+      {
+        models: { User: { field: "id", alphabet: "abc", size: 10 } },
         relations: { User: { "": "Post" } },
+      },
+      "field names",
+    ],
+    [
+      {
+        models: { User: { field: "id", alphabet: "abc", size: 10 } },
+        relations: { User: { " ": "Post" } },
       },
       "field names",
     ],
@@ -357,7 +465,30 @@ describe("customNanoid", () => {
       },
       "relations.User.posts",
     ],
-  ])("不正な設定を初期化時に拒否する", (options, message) => {
-    expect(() => customNanoid(options as CustomNanoidOptions)).toThrow(message);
+    [
+      {
+        models: { User: { field: "id", alphabet: "abc", size: 10 } },
+        relations: { User: { posts: " " } },
+      },
+      "relations.User.posts",
+    ],
+    [
+      {
+        models: { User: { field: "id", alphabet: "abc", size: 10 } },
+        relations: { User: { posts: 1 } },
+      },
+      "relations.User.posts",
+    ],
+  ])("設定の境界値を検証する", (options, message) => {
+    const initialize = () =>
+      customNanoid(options as unknown as CustomNanoidOptions);
+
+    if (message === null) {
+      expect(initialize).not.toThrow();
+      return;
+    }
+
+    expect(initialize).toThrow(TypeError);
+    expect(initialize).toThrow(message);
   });
 });

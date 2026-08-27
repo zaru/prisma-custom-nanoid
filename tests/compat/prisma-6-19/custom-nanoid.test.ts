@@ -16,12 +16,18 @@ const prisma = new PrismaClient().$extends(
         alphabet: "def456",
         size: 10,
       },
+      Comment: {
+        field: "id",
+        alphabet: "ghi789",
+        size: 9,
+      },
     },
     relations: customNanoidRelations,
   }),
 );
 
 beforeEach(async () => {
+  await prisma.comment.deleteMany();
   await prisma.post.deleteMany();
   await prisma.user.deleteMany();
 });
@@ -48,5 +54,31 @@ describe("Prisma 6.19 compatibility", () => {
 
     expect(user.id).toMatch(/^[abc123]{12}$/);
     expect(user.posts[0]?.id).toMatch(/^[def456]{10}$/);
+  });
+
+  it("明示 ID を保持し、nested update 内の create を補完する", async () => {
+    const user = await prisma.user.create({
+      data: {
+        id: "explicit-user",
+        email: "prisma-6-19-update@example.com",
+        posts: { create: { id: "explicit-post", title: "post" } },
+      },
+    });
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        posts: {
+          update: {
+            where: { id: "explicit-post" },
+            data: { comments: { create: { body: "comment" } } },
+          },
+        },
+      },
+      include: { posts: { include: { comments: true } } },
+    });
+
+    expect(updated.id).toBe("explicit-user");
+    expect(updated.posts[0]?.id).toBe("explicit-post");
+    expect(updated.posts[0]?.comments[0]?.id).toMatch(/^[ghi789]{9}$/);
   });
 });

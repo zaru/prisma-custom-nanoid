@@ -3,6 +3,7 @@ import {
   buildRelations,
   renderRelationsModule,
 } from "../src/generator-output.js";
+import { customNanoidRelations } from "./fixtures/generated-custom-nanoid/index.js";
 
 describe("relations generator", () => {
   it("object field だけから全 relation mapping を決定的に生成する", () => {
@@ -48,5 +49,38 @@ export const customNanoidRelations = {
   },
 } as const;
 `);
+  });
+
+  it("relation がなければ空 object の module を出力する", () => {
+    expect(renderRelationsModule(buildRelations([]))).toContain(
+      "export const customNanoidRelations = {} as const;",
+    );
+  });
+
+  it("入力を変更せず、生成済み fixture と同じ mapping を構築する", () => {
+    const fields = [
+      { name: "posts", kind: "object", type: "Post" },
+      { name: "email", kind: "scalar", type: "String" },
+    ];
+    const models = [
+      { name: "User", fields },
+      { name: "Post", fields: [] },
+    ];
+
+    expect(buildRelations(models)).toEqual({ User: { posts: "Post" } });
+    expect(models).toEqual([
+      { name: "User", fields },
+      { name: "Post", fields: [] },
+    ]);
+    expect(fields.map((field) => field.name)).toEqual(["posts", "email"]);
+
+    expect(customNanoidRelations).toEqual({
+      Account: { projects: "Project" },
+      Comment: { post: "Post" },
+      Post: { author: "User", comments: "Comment" },
+      Project: { account: "Account", tokens: "Token" },
+      Token: { project: "Project", user: "User" },
+      User: { posts: "Post", tokens: "Token" },
+    });
   });
 });

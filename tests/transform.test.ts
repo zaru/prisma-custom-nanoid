@@ -10,11 +10,13 @@ function createConfigs(): ReadonlyMap<string, NormalizedModelConfig> {
   return new Map([
     ["User", { field: "id", generate: () => `user-${++sequence}` }],
     ["Post", { field: "id", generate: () => `post-${++sequence}` }],
+    ["Comment", { field: "id", generate: () => `comment-${++sequence}` }],
   ]);
 }
 
 const relations: NormalizedRelations = new Map([
   ["User", new Map([["posts", "Post"]])],
+  ["Post", new Map([["comments", "Comment"]])],
 ]);
 
 describe("transformOperationArgs", () => {
@@ -178,5 +180,127 @@ describe("transformOperationArgs", () => {
     });
     expect(result.update).not.toHaveProperty("id");
     expect(shared).toEqual({ posts: { create: { title: "nested" } } });
+  });
+
+  it("nested update の直接 payload と data envelope を処理する", () => {
+    const args = {
+      data: {
+        posts: {
+          update: [
+            {
+              comments: { create: { body: "direct" } },
+            },
+            {
+              where: { id: "post-id" },
+              data: {
+                comments: { create: { body: "envelope" } },
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    const result = transformOperationArgs(
+      "update",
+      "User",
+      args,
+      createConfigs(),
+      relations,
+    );
+
+    expect(result.data.posts.update).toEqual([
+      {
+        comments: {
+          create: { id: "comment-1", body: "direct" },
+        },
+      },
+      {
+        where: { id: "post-id" },
+        data: {
+          comments: {
+            create: { id: "comment-2", body: "envelope" },
+          },
+        },
+      },
+    ]);
+    expect(args.data.posts.update[1]?.where).toEqual({ id: "post-id" });
+  });
+
+  it("nested updateMany の data だけを処理し、不正な entry は保持する", () => {
+    const invalidEntry = { where: { id: "invalid" }, data: null };
+    const args = {
+      data: {
+        posts: {
+          updateMany: [
+            {
+              where: { id: "post-id" },
+              data: {
+                comments: { create: { body: "created" } },
+              },
+            },
+            invalidEntry,
+          ],
+        },
+      },
+    };
+
+    const result = transformOperationArgs(
+      "update",
+      "User",
+      args,
+      createConfigs(),
+      relations,
+    );
+
+    expect(result.data.posts.updateMany[0]).toEqual({
+      where: { id: "post-id" },
+      data: {
+        comments: {
+          create: { id: "comment-1", body: "created" },
+        },
+      },
+    });
+    expect(result.data.posts.updateMany[1]).toBe(invalidEntry);
+  });
+
+  it("欠けた branch と不正な relation write を変更しない", () => {
+    const relationWrite = {
+      createMany: { skipDuplicates: true },
+      connectOrCreate: [{ where: { id: "post-id" } }, null],
+      upsert: [{ where: { id: "post-id" } }, "invalid"],
+      update: null,
+      updateMany: { where: { id: "post-id" }, data: null },
+      connect: { id: "existing" },
+    };
+    const args = {
+      data: {
+        id: "user-id",
+        posts: relationWrite,
+      },
+    };
+
+    expect(
+      transformOperationArgs(
+        "create",
+        "User",
+        args,
+        createConfigs(),
+        relations,
+      ),
+    ).toBe(args);
+  });
+
+  it("非 object args と対象外 model を変更しない", () => {
+    const configs = createConfigs();
+
+    expect(
+      transformOperationArgs("create", "User", null, configs, relations),
+    ).toBeNull();
+
+    const args = { data: { name: "untouched" } };
+    expect(
+      transformOperationArgs("create", "Account", args, configs, relations),
+    ).toBe(args);
   });
 });
