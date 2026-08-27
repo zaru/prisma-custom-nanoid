@@ -4,7 +4,7 @@ generator client {
 }
 
 generator customNanoid {
-  provider = "prisma-custom-nanoid-generator"
+  provider = "node ../../../dist/generator.js"
   output   = "../generated-custom-nanoid"
 }
 
