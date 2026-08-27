@@ -84,5 +84,5 @@
 
 - nested write は query extension の一回の引数に埋め込まれており、実行時 callback だけでは対象モデル名を得られない。そのため、Prisma 内部 API を読む方式ではなく、relation mapping を公開 API として持つ。
 - Prisma の operation 名には `createManyAndReturn` も含める。`update` 自体で root の ID を生成するのではなく、内部に含まれる新規作成ブランチだけを処理する。nested write を持たない `delete` などは透過する。
-- 変換は immutable に行い、生成処理を query 実行後や DB default に委ねない。既存の `@default("")` を前提とする型上の回避策と、明示 ID を保持する仕様は維持する。
+- 変換は immutable に行い、生成処理を query 実行後や DB default に委ねない。`@default(nanoid())` で ID を省略可能にしつつ DB default を追加しない型上の回避策と、明示 ID を保持する仕様は維持する。
 - 設定検証の失敗は既存どおり初期化時に明示的な `TypeError` とし、実行時の未知の入力は成功形の代替値を返さず Prisma 本来の検証に委ねる。

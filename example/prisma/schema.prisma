@@ -13,20 +13,20 @@ datasource db {
 }
 
 model User {
-  id     String @id @default("")
+  id     String @id @default(nanoid())
   email  String @unique
   posts  Post[]
 }
 
 model Post {
-  id       String @id @default("")
+  id       String @id @default(nanoid())
   title    String
   authorId String
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
 model ApiKey {
-  id    String @id @default("")
+  id    String @id @default(nanoid())
   label String
 }
 

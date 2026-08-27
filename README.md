@@ -31,22 +31,24 @@ Install `@prisma/client` in your application separately.
 
 ## Usage
 
-Set a placeholder database default on each target field so that Prisma's types allow the ID to be omitted and the extension can provide a value. The extension replaces this value before Prisma executes a create operation.
+Set Prisma's client-side `nanoid()` default on each target field so that Prisma's types allow the ID to be omitted and the extension can provide a value. The extension sets the configured custom Nano ID before Prisma evaluates this fallback.
 
 ```prisma
 model User {
-  id    String @id @default("")
+  id    String @id @default(nanoid())
   email String @unique
   posts Post[]
 }
 
 model Post {
-  id       String @id @default("")
+  id       String @id @default(nanoid())
   title    String
   authorId String
   author   User   @relation(fields: [authorId], references: [id])
 }
 ```
+
+Unlike a literal `@default("")`, Prisma's `nanoid()` default does not add a database `DEFAULT` constraint. If a create operation bypasses this extension, Prisma's standard Nano ID is used as a fallback instead.
 
 Add the relation mapping generator to the same Prisma schema. Configure the Prisma Client generator for your Prisma major version.
 

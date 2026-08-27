@@ -31,6 +31,7 @@ pnpm --dir example start
 ## What the example demonstrates
 
 - Omitting `User.id` generates a Nano ID with the configured alphabet and size.
+- Prisma's `@default(nanoid())` keeps the ID optional in create inputs without adding a database `DEFAULT` constraint.
 - `ApiKey` can use a different alphabet and size from `User`.
 - Records with an explicit `id` preserve that value.
 - Each item in `createManyAndReturn` receives its own ID.
