@@ -1,0 +1,76 @@
+{
+  "name": "prisma-custom-nanoid",
+  "version": "0.1.0",
+  "description": "A Prisma Client extension that generates custom Nano IDs for create operations and nested writes",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "prisma-custom-nanoid-generator": "./dist/generator.js"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist/index.cjs",
+    "dist/index.d.cts",
+    "dist/index.d.ts",
+    "dist/index.js",
+    "dist/generator.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": "^20.19 || ^22.12 || >=24.0"
+  },
+  "packageManager": "pnpm@11.22.0",
+  "scripts": {
+    "build": "tsup src/index.ts src/generator.ts --format esm,cjs --clean && tsc -p tsconfig.build.json && node -e \"require('node:fs').copyFileSync('dist/index.d.ts', 'dist/index.d.cts')\"",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit",
+    "prisma:generate": "pnpm build && prisma generate",
+    "test:prepare": "pnpm prisma:generate && prisma db push",
+    "test": "pnpm test:prepare && vitest run",
+    "test:compat:prisma6": "pnpm build && pnpm --dir tests/compat/prisma-6-0 test && pnpm --dir tests/compat/prisma-6-19 test",
+    "test:watch": "vitest",
+    "pack:check": "pnpm build && publint && pnpm pack --dry-run",
+    "validate": "pnpm check && pnpm typecheck && pnpm test && pnpm test:compat:prisma6 && pnpm pack:check"
+  },
+  "keywords": [
+    "prisma",
+    "prisma-extension",
+    "nanoid"
+  ],
+  "author": "zaru",
+  "license": "MIT",
+  "peerDependencies": {
+    "@prisma/client": "^6.0.0 || ^7.10.0"
+  },
+  "dependencies": {
+    "@prisma/generator-helper": "7.10.0",
+    "nanoid": "6.0.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.10",
+    "@prisma/adapter-better-sqlite3": "7.10.0",
+    "@prisma/client": "7.10.0",
+    "@types/node": "26.3.0",
+    "prisma": "7.10.0",
+    "publint": "0.3.24",
+    "tsup": "8.5.1",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
+}

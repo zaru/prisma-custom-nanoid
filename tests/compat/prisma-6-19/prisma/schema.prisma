@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated"
+}
+
+generator customNanoid {
+  provider = "prisma-custom-nanoid-generator"
+  output   = "../generated-custom-nanoid"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./test.db"
+}
+
+model User {
+  id    String @id @default("")
+  email String @unique
+  posts Post[]
+}
+
+model Post {
+  id       String @id @default("")
+  title    String
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}

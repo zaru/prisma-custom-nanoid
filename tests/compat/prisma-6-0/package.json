@@ -1,0 +1,18 @@
+{
+  "name": "prisma-custom-nanoid-compat-prisma-6-0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "prisma generate --schema prisma/schema.prisma",
+    "db:push": "prisma db push --schema prisma/schema.prisma --skip-generate",
+    "test": "pnpm generate && pnpm db:push && vitest run"
+  },
+  "dependencies": {
+    "@prisma/client": "6.0.1",
+    "prisma-custom-nanoid": "workspace:*"
+  },
+  "devDependencies": {
+    "prisma": "6.0.1",
+    "vitest": "4.1.11"
+  }
+}

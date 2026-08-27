@@ -1,0 +1,21 @@
+packages:
+  - example
+  - tests/compat/*
+
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  better-sqlite3: true
+  esbuild: true
+  prisma: true
+minimumReleaseAgeExclude:
+  - '@prisma/adapter-better-sqlite3@7.10.0'
+  - '@prisma/client-runtime-utils@7.10.0'
+  - '@prisma/client@7.10.0'
+  - '@prisma/config@7.10.0'
+  - '@prisma/debug@7.10.0'
+  - '@prisma/driver-adapter-utils@7.10.0'
+  - '@prisma/engines@7.10.0'
+  - '@prisma/fetch-engine@7.10.0'
+  - '@prisma/get-platform@7.10.0'
+  - prisma@7.10.0

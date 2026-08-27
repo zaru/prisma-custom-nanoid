@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated"
+}
+
+generator customNanoid {
+  provider = "prisma-custom-nanoid-generator"
+  output   = "./generated-custom-nanoid"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id     String @id @default("")
+  email  String @unique
+  posts  Post[]
+}
+
+model Post {
+  id       String @id @default("")
+  title    String
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id    String @id @default("")
+  label String
+}
+
+model Counter {
+  id    Int @id @default(autoincrement())
+  value Int
+}

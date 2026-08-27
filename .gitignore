@@ -1,0 +1,12 @@
+node_modules/
+dist/
+tests/fixtures/generated/
+tests/fixtures/test.db
+tests/fixtures/test.db-journal
+tests/compat/*/generated/
+tests/compat/*/generated-custom-nanoid/
+tests/compat/*/prisma/test.db*
+example/prisma/generated/
+example/prisma/example.db*
+*.tgz
+.DS_Store

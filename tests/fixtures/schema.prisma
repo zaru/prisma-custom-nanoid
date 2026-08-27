@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated"
+}
+
+generator customNanoid {
+  provider = "node ./dist/generator.js"
+  output   = "./generated-custom-nanoid"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id     String @id @default("")
+  email  String @unique
+  posts  Post[]
+  tokens Token[]
+}
+
+model Post {
+  id       String    @id @default("")
+  title    String
+  authorId String
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments Comment[]
+}
+
+model Comment {
+  id     String @id @default("")
+  body   String
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id    String @id @default("")
+  label String
+}
+
+model Counter {
+  id    Int    @id @default(autoincrement())
+  value Int
+}
+
+model Account {
+  id       Int       @id @default(autoincrement())
+  name     String
+  projects Project[]
+}
+
+model Project {
+  id        Int     @id @default(autoincrement())
+  name      String
+  accountId Int
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  tokens    Token[]
+}
+
+model Token {
+  id        String  @id @default("")
+  label     String
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

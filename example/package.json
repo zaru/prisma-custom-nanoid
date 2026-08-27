@@ -1,0 +1,22 @@
+{
+  "name": "prisma-custom-nanoid-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "prisma generate",
+    "db:push": "prisma db push",
+    "build": "tsc",
+    "start": "node dist/src/index.js",
+    "demo": "pnpm generate && pnpm db:push && pnpm build && pnpm start"
+  },
+  "dependencies": {
+    "@prisma/adapter-better-sqlite3": "7.10.0",
+    "@prisma/client": "7.10.0",
+    "prisma-custom-nanoid": "file:.."
+  },
+  "devDependencies": {
+    "@types/node": "26.3.0",
+    "prisma": "7.10.0",
+    "typescript": "7.0.2"
+  }
+}
