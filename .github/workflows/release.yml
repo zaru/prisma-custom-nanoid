@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org/
+      - run: pnpm install --frozen-lockfile
+      - name: タグとパッケージバージョンを照合
+        run: |
+          package_version="$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "v$package_version" ]; then
+            echo "::error::タグ $GITHUB_REF_NAME と package.json のバージョン $package_version が一致しません"
+            exit 1
+          fi
+      - run: pnpm validate
+      - run: npm publish
+      - name: GitHub Releaseを作成
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes --title "$GITHUB_REF_NAME"

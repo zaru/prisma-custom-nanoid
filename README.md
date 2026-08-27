@@ -179,24 +179,16 @@ In addition to the standard Prisma 7 tests, `pnpm validate` runs compatibility t
 
 ## リリース
 
-初回の `0.1.0` は、npm Trusted Publishingを設定するためのパッケージがまだ存在しないため、ローカルからnpmjs.comへ公開します。ローカルの既定レジストリに依存しないよう、レジストリは必ず明示します。
+npmjs.comのパッケージ設定で、次のGitHub ActionsワークフローをTrusted Publisherとして登録します。
 
-```sh
-pnpm validate
-npm login --registry=https://registry.npmjs.org/
-npm publish --registry=https://registry.npmjs.org/
-npm view prisma-custom-nanoid@0.1.0 --registry=https://registry.npmjs.org/
-```
+- Organization or user: `zaru`
+- Repository: `prisma-custom-nanoid`
+- Workflow filename: `release.yml`
+- Environment name: `npm`
 
-公開後、同じコミットに注釈付きタグとGitHub Releaseを作成します。
+リリース時は `package.json` のバージョンを更新して `pnpm validate` を通し、変更をコミットします。そのコミットに対応する注釈付き `vX.Y.Z` タグをpushしてください。
 
-```sh
-git tag -a v0.1.0 -m "v0.1.0"
-git push origin v0.1.0
-gh release create v0.1.0 --verify-tag --generate-notes
-```
-
-次版以降は `package.json` のバージョンを更新して検証・コミットした後、対応する `vX.Y.Z` タグをpushします。タグとバージョンが一致すると、GitHub Actionsがnpm公開とGitHub Release作成を順番に実行します。
+タグと `package.json` のバージョンが一致すると、GitHub Actionsがnpm Trusted Publishingでnpmjs.comへ公開し、成功後にGitHub Releaseを自動生成します。npmトークンは使用しません。
 
 ## License
 
