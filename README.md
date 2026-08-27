@@ -177,6 +177,27 @@ pnpm validate
 
 In addition to the standard Prisma 7 tests, `pnpm validate` runs compatibility tests against Prisma 6.0 and Prisma 6.19.
 
+## リリース
+
+初回の `0.1.0` は、npm Trusted Publishingを設定するためのパッケージがまだ存在しないため、ローカルからnpmjs.comへ公開します。ローカルの既定レジストリに依存しないよう、レジストリは必ず明示します。
+
+```sh
+pnpm validate
+npm login --registry=https://registry.npmjs.org/
+npm publish --registry=https://registry.npmjs.org/
+npm view prisma-custom-nanoid@0.1.0 --registry=https://registry.npmjs.org/
+```
+
+公開後、同じコミットに注釈付きタグとGitHub Releaseを作成します。
+
+```sh
+git tag -a v0.1.0 -m "v0.1.0"
+git push origin v0.1.0
+gh release create v0.1.0 --verify-tag --generate-notes
+```
+
+次版以降は `package.json` のバージョンを更新して検証・コミットした後、対応する `vX.Y.Z` タグをpushします。タグとバージョンが一致すると、GitHub Actionsがnpm公開とGitHub Release作成を順番に実行します。
+
 ## License
 
 MIT

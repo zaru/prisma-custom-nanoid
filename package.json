@@ -7,7 +7,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "prisma-custom-nanoid-generator": "./dist/generator.js"
+    "prisma-custom-nanoid-generator": "dist/generator.js"
   },
   "exports": {
     ".": {
@@ -53,6 +53,17 @@
     "prisma-extension",
     "nanoid"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zaru/prisma-custom-nanoid.git"
+  },
+  "homepage": "https://github.com/zaru/prisma-custom-nanoid#readme",
+  "bugs": {
+    "url": "https://github.com/zaru/prisma-custom-nanoid/issues"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "author": "zaru",
   "license": "MIT",
   "peerDependencies": {
