@@ -3,7 +3,10 @@
 import { mkdir, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import generatorHelper from "@prisma/generator-helper";
-import { buildRelations, renderRelationsModule } from "./generator-output.js";
+import {
+  buildConfiguration,
+  renderConfigurationModule,
+} from "./generator-output.js";
 
 const { generatorHandler } = generatorHelper;
 
@@ -11,7 +14,7 @@ generatorHandler({
   onManifest() {
     return {
       defaultOutput: "./generated/custom-nanoid",
-      prettyName: "Prisma Custom Nano ID Relations Generator",
+      prettyName: "Prisma Custom Nano ID Configuration Generator",
     };
   },
   async onGenerate(options) {
@@ -24,8 +27,8 @@ generatorHandler({
 
     const outputPath = path.join(outputDirectory, "index.ts");
     const temporaryPath = `${outputPath}.tmp-${process.pid}`;
-    const source = renderRelationsModule(
-      buildRelations(options.dmmf.datamodel.models),
+    const source = renderConfigurationModule(
+      buildConfiguration(options.dmmf.datamodel.models),
     );
 
     await mkdir(outputDirectory, { recursive: true });

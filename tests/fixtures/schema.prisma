@@ -13,14 +13,16 @@ datasource db {
 }
 
 model User {
-  id     String @id @default(nanoid())
+  /// @customNanoid(alphabet: "abc123")
+  id     String @id @default(nanoid(12))
   email  String @unique
   posts  Post[]
   tokens Token[]
 }
 
 model Post {
-  id       String    @id @default(nanoid())
+  /// @customNanoid(alphabet: "def456")
+  id       String    @id @default(nanoid(10))
   title    String
   authorId String
   author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -28,14 +30,16 @@ model Post {
 }
 
 model Comment {
-  id     String @id @default(nanoid())
+  /// @customNanoid(alphabet: "ghi789")
+  id     String @id @default(nanoid(9))
   body   String
   postId String
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model ApiKey {
-  id    String @id @default(nanoid())
+  /// @customNanoid(alphabet: "xyz789")
+  id    String @id @default(nanoid(8))
   label String
 }
 
@@ -59,7 +63,8 @@ model Project {
 }
 
 model Token {
-  id        String  @id @default(nanoid())
+  /// @customNanoid(alphabet: "tuv456")
+  id        String  @id @default(nanoid(7))
   label     String
   projectId Int
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)

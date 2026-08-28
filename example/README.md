@@ -14,7 +14,7 @@ pnpm --dir example run demo
 
 The `demo` script performs these steps:
 
-1. Generates Prisma Client and the relation mapping.
+1. Generates Prisma Client and the custom Nano ID configuration.
 2. Applies the schema to the SQLite database.
 3. Builds the CLI from TypeScript.
 4. Creates records and displays their IDs.
@@ -31,7 +31,8 @@ pnpm --dir example start
 ## What the example demonstrates
 
 - Omitting `User.id` generates a Nano ID with the configured alphabet and size.
-- Prisma's `@default(nanoid())` keeps the ID optional in create inputs without adding a database `DEFAULT` constraint.
+- Prisma's `@default(nanoid(size))` keeps the ID optional in create inputs without adding a database `DEFAULT` constraint.
+- A field-level `@customNanoid` documentation directive supplies the custom alphabet.
 - `ApiKey` can use a different alphabet and size from `User`.
 - Records with an explicit `id` preserve that value.
 - Each item in `createManyAndReturn` receives its own ID.
@@ -39,6 +40,6 @@ pnpm --dir example start
 - A nested create generates `Post.id` through the relation mapping generated from the Prisma schema.
 - The extension does not interfere with unconfigured models such as `Counter`.
 
-The `customNanoid` generator in `prisma/schema.prisma` creates `prisma/generated-custom-nanoid/index.ts`, and the CLI imports `customNanoidRelations` from that file.
+The `customNanoid` generator in `prisma/schema.prisma` creates `prisma/generated-custom-nanoid/index.ts`, and the CLI passes its `customNanoidConfig` export directly to the extension.
 
 The script deletes its example records before recreating them, so it can be run repeatedly.

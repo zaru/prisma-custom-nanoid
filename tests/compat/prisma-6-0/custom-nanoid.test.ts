@@ -1,30 +1,9 @@
 import { customNanoid } from "prisma-custom-nanoid";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { PrismaClient } from "./generated/index.js";
-import { customNanoidRelations } from "./generated-custom-nanoid/index.js";
+import { customNanoidConfig } from "./generated-custom-nanoid/index.js";
 
-const prisma = new PrismaClient().$extends(
-  customNanoid({
-    models: {
-      User: {
-        field: "id",
-        alphabet: "abc123",
-        size: 12,
-      },
-      Post: {
-        field: "id",
-        alphabet: "def456",
-        size: 10,
-      },
-      Comment: {
-        field: "id",
-        alphabet: "ghi789",
-        size: 9,
-      },
-    },
-    relations: customNanoidRelations,
-  }),
-);
+const prisma = new PrismaClient().$extends(customNanoid(customNanoidConfig));
 
 beforeEach(async () => {
   await prisma.comment.deleteMany();

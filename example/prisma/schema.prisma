@@ -13,20 +13,23 @@ datasource db {
 }
 
 model User {
-  id     String @id @default(nanoid())
+  /// @customNanoid(alphabet: "0123456789abcdefghijklmnopqrstuvwxyz")
+  id     String @id @default(nanoid(16))
   email  String @unique
   posts  Post[]
 }
 
 model Post {
-  id       String @id @default(nanoid())
+  /// @customNanoid(alphabet: "abcdefghijklmnopqrstuvwxyz")
+  id       String @id @default(nanoid(12))
   title    String
   authorId String
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
 model ApiKey {
-  id    String @id @default(nanoid())
+  /// @customNanoid(alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+  id    String @id @default(nanoid(24))
   label String
 }
 

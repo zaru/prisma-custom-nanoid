@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { customNanoid } from "prisma-custom-nanoid";
 import { PrismaClient } from "../prisma/generated/client.js";
-import { customNanoidRelations } from "../prisma/generated-custom-nanoid/index.js";
+import { customNanoidConfig } from "../prisma/generated-custom-nanoid/index.js";
 
 const exampleDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -15,26 +15,7 @@ const adapter = new PrismaBetterSqlite3({
 });
 
 const prisma = new PrismaClient({ adapter }).$extends(
-  customNanoid({
-    models: {
-      User: {
-        field: "id",
-        alphabet: "0123456789abcdefghijklmnopqrstuvwxyz",
-        size: 16,
-      },
-      ApiKey: {
-        field: "id",
-        alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        size: 24,
-      },
-      Post: {
-        field: "id",
-        alphabet: "abcdefghijklmnopqrstuvwxyz",
-        size: 12,
-      },
-    },
-    relations: customNanoidRelations,
-  }),
+  customNanoid(customNanoidConfig),
 );
 
 async function main() {

@@ -4,7 +4,7 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { type CustomNanoidOptions, customNanoid } from "../src/index.js";
 import { PrismaClient } from "./fixtures/generated/client.js";
-import { customNanoidRelations } from "./fixtures/generated-custom-nanoid/index.js";
+import { customNanoidConfig } from "./fixtures/generated-custom-nanoid/index.js";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 const databasePath = path.join(currentDirectory, "fixtures/test.db");
@@ -13,36 +13,7 @@ const adapter = new PrismaBetterSqlite3({
 });
 
 const prisma = new PrismaClient({ adapter }).$extends(
-  customNanoid({
-    models: {
-      User: {
-        field: "id",
-        alphabet: "abc123",
-        size: 12,
-      },
-      Post: {
-        field: "id",
-        alphabet: "def456",
-        size: 10,
-      },
-      Comment: {
-        field: "id",
-        alphabet: "ghi789",
-        size: 9,
-      },
-      ApiKey: {
-        field: "id",
-        alphabet: "xyz789",
-        size: 8,
-      },
-      Token: {
-        field: "id",
-        alphabet: "tuv456",
-        size: 7,
-      },
-    },
-    relations: customNanoidRelations,
-  }),
+  customNanoid(customNanoidConfig),
 );
 
 beforeEach(async () => {

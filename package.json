@@ -1,6 +1,6 @@
 {
   "name": "prisma-custom-nanoid",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A Prisma Client extension that generates custom Nano IDs for create operations and nested writes",
   "type": "module",
   "main": "./dist/index.cjs",

@@ -2,18 +2,13 @@
 
 A Prisma Client extension that generates Nano IDs with a configurable alphabet and length.
 
-```ts
-const prisma = new PrismaClient({ adapter }).$extends(
-  customNanoid({
-    models: {
-      User: {
-        field: "id",
-        alphabet: "0123456789abcdefghijklmnopqrstuvwxyz",
-        size: 16,
-      },
-    },
-  }),
-);
+```prisma
+model User {
+  /// @customNanoid(alphabet: "0123456789abcdefghijklmnopqrstuvwxyz")
+  id    String @id @default(nanoid(16))
+  email String @unique
+  posts Post[]
+}
 ```
 
 ## Requirements
@@ -31,26 +26,24 @@ Install `@prisma/client` in your application separately.
 
 ## Usage
 
-Set Prisma's client-side `nanoid()` default on each target field so that Prisma's types allow the ID to be omitted and the extension can provide a value. The extension sets the configured custom Nano ID before Prisma evaluates this fallback.
+Add a `@customNanoid` documentation directive to each target field. Set the alphabet in the directive and the size in Prisma's client-side `nanoid(size)` default.
 
 ```prisma
 model User {
-  id    String @id @default(nanoid())
+  /// @customNanoid(alphabet: "0123456789abcdefghijklmnopqrstuvwxyz")
+  id    String @id @default(nanoid(16))
   email String @unique
   posts Post[]
 }
 
 model Post {
-  id       String @id @default(nanoid())
+  /// @customNanoid(alphabet: "abcdefghijklmnopqrstuvwxyz")
+  id       String @id @default(nanoid(12))
   title    String
   authorId String
   author   User   @relation(fields: [authorId], references: [id])
 }
 ```
-
-Unlike a literal `@default("")`, Prisma's `nanoid()` default does not add a database `DEFAULT` constraint. If a create operation bypasses this extension, Prisma's standard Nano ID is used as a fallback instead.
-
-Add the relation mapping generator to the same Prisma schema. Configure the Prisma Client generator for your Prisma major version.
 
 ### Prisma 7
 
@@ -89,7 +82,7 @@ datasource db {
 }
 ```
 
-Running `prisma generate` creates a mapping from every relation field in the Prisma schema.
+Running `prisma generate` creates the model configuration from annotated fields and a mapping from every relation field in the Prisma schema.
 
 ```sh
 pnpm exec prisma generate
@@ -97,30 +90,11 @@ pnpm exec prisma generate
 
 ```ts
 import { PrismaClient } from "./generated/prisma/client.js";
-import { customNanoidRelations } from "./generated/custom-nanoid/index.js";
+import { customNanoidConfig } from "./generated/custom-nanoid/index.js";
 import { customNanoid } from "prisma-custom-nanoid";
 
 const prisma = new PrismaClient({ adapter }).$extends(
-  customNanoid({
-    models: {
-      User: {
-        field: "id",
-        alphabet: "0123456789abcdefghijklmnopqrstuvwxyz",
-        size: 16,
-      },
-      ApiKey: {
-        field: "id",
-        alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        size: 24,
-      },
-      Post: {
-        field: "id",
-        alphabet: "0123456789abcdefghijklmnopqrstuvwxyz",
-        size: 20,
-      },
-    },
-    relations: customNanoidRelations,
-  }),
+  customNanoid(customNanoidConfig),
 );
 ```
 
@@ -137,11 +111,11 @@ The example above uses Prisma 7 imports. When using Prisma 6 with `prisma-client
 
 The extension does not modify `where`, `connect`, `delete`, `disconnect`, or regular update scalar values. It passes unrecognized argument shapes and nested writes without a mapping through to Prisma unchanged. Because Prisma does not allow relation writes in top-level `createMany` or `createManyAndReturn`, only the root items are processed for those operations.
 
-The extension does not generate IDs for models without a Nano ID configuration. If such a model has a relation mapping, traversal continues so that configured descendant models can still be reached from an unconfigured root or intermediate model. The `relations` option is optional, so the original `{ models }`-only configuration remains supported.
+The extension does not generate IDs for models without an annotated field. Traversal still continues through the generated relation mapping so configured descendants can be reached from an unconfigured root or intermediate model.
 
 ## Regenerating after schema changes
 
-Regenerate Prisma Client and the relation mapping whenever you add, remove, or rename a relation field.
+Regenerate Prisma Client and the custom Nano ID configuration whenever you change an alphabet, size, configured field, model, or relation.
 
 ```sh
 pnpm exec prisma generate
